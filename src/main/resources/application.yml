@@ -1,0 +1,10 @@
+timeLimiter.enabled : true
+circuitBreaker.enabled : true
+runLoadInternally.enabled : false
+printMetrics.enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info,metric
