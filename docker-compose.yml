@@ -4,7 +4,9 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
+      - type: bind
+        source: ./prometheus.yml
+        target: /etc/prometheus/prometheus.yml
     restart: always
     ports:
       - "9090:9090"
