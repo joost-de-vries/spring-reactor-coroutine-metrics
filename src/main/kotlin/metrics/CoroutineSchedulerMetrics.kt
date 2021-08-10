@@ -7,7 +7,11 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Tags
 import io.micrometer.core.instrument.binder.BaseUnits
 import io.micrometer.core.instrument.binder.MeterBinder
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.scheduling.CoroutineScheduler
+import kotlinx.coroutines.scheduling.ExperimentalCoroutineDispatcher
+import org.slf4j.LoggerFactory
 import java.lang.reflect.Field
 
 @Suppress("INVISIBLE_REFERENCE", "EXPOSED_PARAMETER_TYPE")
@@ -63,3 +67,25 @@ class CoroutineSchedulerMetrics(
                 .register(registry)
     }
 }
+
+private val log = LoggerFactory.getLogger(CoroutineSchedulerMetrics::class.java)
+
+// until this lands https://github.com/Kotlin/kotlinx.coroutines/issues/1360
+fun MeterRegistry.tryMonitorCoroutineScheduler(coroutineDispatcher: CoroutineDispatcher, name: String, metricPrefix: String = "") {
+    coroutineDispatcher.coroutineScheduler()?.let {
+        log.info("Monitoring CoroutineScheduler metrics")
+        monitorCoroutineScheduler(it, name, metricPrefix)
+    } ?: log.warn("Failed to monitor CoroutineScheduler metrics for ${coroutineDispatcher::class.java.name}")
+}
+
+private fun MeterRegistry.monitorCoroutineScheduler(coroutineScheduler: CoroutineScheduler, name: String, metricPrefix: String = "") =
+    CoroutineSchedulerMetrics(coroutineScheduler, listOf(Tag.of("name", name)), metricPrefix).also {
+        it.bindTo(this)
+    }
+
+@OptIn(InternalCoroutinesApi::class)
+@Suppress("INVISIBLE_REFERENCE")
+private fun CoroutineDispatcher.coroutineScheduler(): CoroutineScheduler? =
+    (this as? ExperimentalCoroutineDispatcher)?.let {
+        it.executor as? CoroutineScheduler
+    }

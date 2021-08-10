@@ -74,3 +74,19 @@ private fun CoroutineDispatcher.queueSize() = kotlin.runCatching {
         it.getOrNull()
     }
 }
+
+// until this lands https://github.com/Kotlin/kotlinx.coroutines/issues/1360
+fun MeterRegistry.tryMonitorLimitingDispatcher(coroutineDispatcher: CoroutineDispatcher, name: String, metricPrefix: String) {
+    val isLimitingDispatcher = coroutineDispatcher::class.java.name == "kotlinx.coroutines.scheduling.LimitingDispatcher"
+    if (isLimitingDispatcher) {
+        log.info("Monitoring LimitingDispatcher metrics")
+        monitorLimitingDispatcher(coroutineDispatcher, name, metricPrefix)
+    } else {
+        log.warn("Failed to monitor LimitingDispatcher metrics for ${coroutineDispatcher::class.java.name}")
+    }
+}
+
+private fun MeterRegistry.monitorLimitingDispatcher(limitingDispatcher: CoroutineDispatcher, name: String, metricPrefix: String) =
+    LimitingDispatcherMetrics(limitingDispatcher, listOf(Tag.of("name", name)), metricPrefix).also {
+        it.bindTo(this)
+    }
