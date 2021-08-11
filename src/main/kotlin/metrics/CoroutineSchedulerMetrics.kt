@@ -83,9 +83,13 @@ private fun MeterRegistry.monitorCoroutineScheduler(coroutineScheduler: Coroutin
         it.bindTo(this)
     }
 
-@OptIn(InternalCoroutinesApi::class)
 @Suppress("INVISIBLE_REFERENCE")
-private fun CoroutineDispatcher.coroutineScheduler(): CoroutineScheduler? =
+internal fun CoroutineDispatcher.coroutineScheduler(): CoroutineScheduler? =
+    experimentalCoroutineDispatcherCoroutineScheduler()
+        ?: limitingDispatcherCoroutineScheduler()
+
+@Suppress("INVISIBLE_REFERENCE")
+internal fun CoroutineDispatcher.experimentalCoroutineDispatcherCoroutineScheduler(): CoroutineScheduler? =
     (this as? ExperimentalCoroutineDispatcher)?.let {
         it.executor as? CoroutineScheduler
     }

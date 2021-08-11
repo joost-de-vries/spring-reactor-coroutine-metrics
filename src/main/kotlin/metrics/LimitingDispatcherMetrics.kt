@@ -6,6 +6,9 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.binder.BaseUnits
 import io.micrometer.core.instrument.binder.MeterBinder
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.scheduling.CoroutineScheduler
+import kotlinx.coroutines.scheduling.ExperimentalCoroutineDispatcher
 import kotlinx.coroutines.scheduling.LimitingDispatcher
 import org.slf4j.LoggerFactory
 import test.test.DispatcherProvider
@@ -64,7 +67,7 @@ class LimitingDispatcherMetrics(
 }
 private val log = LoggerFactory.getLogger(LimitingDispatcherMetrics::class.java)
 
-private fun CoroutineDispatcher.queueSize() = kotlin.runCatching {
+internal fun CoroutineDispatcher.queueSize() = kotlin.runCatching {
     this.declaredFieldValue<ConcurrentLinkedQueue<Runnable>>("queue").size
 }.let {
     if(it.isFailure){
@@ -77,16 +80,24 @@ private fun CoroutineDispatcher.queueSize() = kotlin.runCatching {
 
 // until this lands https://github.com/Kotlin/kotlinx.coroutines/issues/1360
 fun MeterRegistry.tryMonitorLimitingDispatcher(coroutineDispatcher: CoroutineDispatcher, name: String, metricPrefix: String) {
-    val isLimitingDispatcher = coroutineDispatcher::class.java.name == "kotlinx.coroutines.scheduling.LimitingDispatcher"
-    if (isLimitingDispatcher) {
+    coroutineDispatcher.asLimitingDispatcher()?.let{
         log.info("Monitoring LimitingDispatcher metrics")
         monitorLimitingDispatcher(coroutineDispatcher, name, metricPrefix)
-    } else {
-        log.warn("Failed to monitor LimitingDispatcher metrics for ${coroutineDispatcher::class.java.name}")
-    }
+    } ?: log.warn("Failed to monitor LimitingDispatcher metrics for ${coroutineDispatcher::class.java.name}")
 }
+
+internal fun CoroutineDispatcher.asLimitingDispatcher() =
+    this.takeIf {
+        this::class.java.name == "kotlinx.coroutines.scheduling.LimitingDispatcher"
+    }
 
 private fun MeterRegistry.monitorLimitingDispatcher(limitingDispatcher: CoroutineDispatcher, name: String, metricPrefix: String) =
     LimitingDispatcherMetrics(limitingDispatcher, listOf(Tag.of("name", name)), metricPrefix).also {
         it.bindTo(this)
+    }
+
+@Suppress("INVISIBLE_REFERENCE")
+internal fun CoroutineDispatcher.limitingDispatcherCoroutineScheduler(): CoroutineScheduler? =
+    this.asLimitingDispatcher()?.let {
+        this.declaredFieldValue<ExperimentalCoroutineDispatcher>("dispatcher").experimentalCoroutineDispatcherCoroutineScheduler()
     }

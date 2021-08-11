@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_REFERENCE", "EXPOSED_PARAMETER_TYPE", "INVISIBLE_MEMBER")
-
 package test.test
 
 import io.micrometer.core.instrument.MeterRegistry
@@ -8,10 +6,6 @@ import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics
 import kotlinx.coroutines.*
 import kotlinx.coroutines.reactor.SchedulerCoroutineDispatcher
 import kotlinx.coroutines.reactor.asCoroutineDispatcher
-import kotlinx.coroutines.scheduling.CoroutineScheduler
-import kotlinx.coroutines.scheduling.ExperimentalCoroutineDispatcher
-import metrics.CoroutineSchedulerMetrics
-import metrics.LimitingDispatcherMetrics
 import metrics.tryMonitorCoroutineScheduler
 import metrics.tryMonitorLimitingDispatcher
 import org.slf4j.LoggerFactory
