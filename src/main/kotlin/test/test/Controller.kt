@@ -50,7 +50,13 @@ class Controller(
     }
 
     @GetMapping("/coroutineParallel")
-    fun outCoroutineParallel(): List<String> = runBlocking(io) {
+    fun outCoroutineParallel(): List<String> = runBlocking(default) {
+        service.coroutineOnParallel()
+    }
+
+    @GetMapping("/coroutineBlocking")
+    fun outCoroutineBlocking(): List<String> = runBlocking(default) {
+        Thread.sleep(10)
         service.coroutineOnParallel()
     }
 
