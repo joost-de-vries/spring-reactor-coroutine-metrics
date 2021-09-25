@@ -18,6 +18,7 @@
         <java.version>11</java.version>
         <kotlin.version>1.5.21</kotlin.version>
         <resilience4j.version>1.7.0</resilience4j.version>
+        <blockhound.version>1.0.6.RELEASE</blockhound.version>
     </properties>
     <dependencies>
         <dependency>
@@ -72,11 +73,11 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-reactor</artifactId>
         </dependency>
-        <dependency>
-            <groupId>it.the-source</groupId>
-            <artifactId>dispatcher</artifactId>
-            <version>0.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>it.the-source</groupId>-->
+<!--            <artifactId>dispatcher</artifactId>-->
+<!--            <version>0.3</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -91,6 +92,21 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-debug</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound-junit-platform</artifactId>
+            <version>${blockhound.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.tools</groupId>
+            <artifactId>blockhound</artifactId>
+            <version>${blockhound.version}</version>
         </dependency>
     </dependencies>
 
@@ -108,6 +124,7 @@
                 <configuration>
                     <args>
                         <arg>-Xjsr305=strict</arg>
+                        <arg>-Xopt-in=kotlin.time.ExperimentalTime,kotlinx.coroutines.InternalCoroutinesApi</arg>
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>

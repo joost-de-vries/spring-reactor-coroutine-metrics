@@ -1,37 +1,62 @@
 package test.test
 
-import io.micrometer.core.instrument.MeterRegistry
-import kotlinx.coroutines.*
-import kotlinx.coroutines.reactor.SchedulerCoroutineDispatcher
-import kotlinx.coroutines.reactor.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.runBlocking
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import reactor.core.scheduler.Schedulers
 
 @RestController
 class Controller(
     val service: Service,
     val nopService: NopService,
-    meterRegistry: MeterRegistry
-) : DispatcherProvider by dispatcherProvider(meterRegistry){
+    dispatcherProvider: DispatcherProvider
+) : DispatcherProvider by dispatcherProvider{
 
-    @GetMapping("/outReactor")
-    fun outMono(): List<String> = runBlocking(parallel) {
+    @GetMapping("/defaultReactor")
+    fun defaultReactor(): List<String> = runBlocking(default) {
         concurrent(3){
             service.reactor().awaitSingle()
         }
     }
 
-    @GetMapping("/outCoroutine")
-    fun outCoroutine(): List<String> = runBlocking(default) {
+    @GetMapping("/defaultCoroutine")
+    fun defaultCoroutine(): List<String> = runBlocking(default) {
         concurrent(3){
             service.coroutineOnCalling()
         }
     }
 
-    @GetMapping("/outCoroutineParallel")
-    fun outCoroutineParallel(): List<String> = runBlocking(unconfined) {
+    @GetMapping("/unconfinedCoroutine")
+    fun unconfinedCoroutine(): List<String> = runBlocking(unconfined) {
+        concurrent(3){
+            service.coroutineOnCalling()
+        }
+    }
+
+    @GetMapping("/suspendCoroutine")
+    suspend fun suspendCoroutine(): List<String> =
+        concurrent(3){
+            service.coroutineOnCalling()
+        }
+
+    @GetMapping("/ioCoroutine")
+    fun ioCoroutine(): List<String> = runBlocking(io) {
+        concurrent(3){
+            service.coroutineOnCalling()
+        }
+    }
+
+    @GetMapping("/coroutineParallel")
+    fun outCoroutineParallel(): List<String> = runBlocking(default) {
+        service.coroutineOnParallel()
+    }
+
+    @GetMapping("/coroutineBlocking")
+    fun outCoroutineBlocking(): List<String> = runBlocking(default) {
+        Thread.sleep(10)
         service.coroutineOnParallel()
     }
 

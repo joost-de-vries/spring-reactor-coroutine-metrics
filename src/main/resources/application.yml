@@ -3,6 +3,8 @@ circuitBreaker.enabled : true
 runLoadInternally.enabled : false
 printMetrics.enabled: false
 
+blockhound.enabled: true
+
 management:
   endpoints:
     web:
