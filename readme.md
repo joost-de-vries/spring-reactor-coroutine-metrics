@@ -1,7 +1,7 @@
 
 Implements Kotlin coroutine scheduler metrics. A workaround until [Coroutine scheduler monitoring](https://github.com/Kotlin/kotlinx.coroutines/issues/1360) is implemented.
 
-To try it out with prometheus:
+To try it out with prometheus:  
 [grafana](http://localhost:3000)  
 [grafana schedulers panel](http://localhost:3000/d/yHCu-pG7z/local-schedulers?orgId=1)  
 [prometheus](http://localhost:9090)  
